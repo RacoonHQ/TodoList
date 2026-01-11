@@ -41,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
       if (response['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Registration successful!'),
+            content: Text('Pendaftaran berhasil!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -53,7 +53,7 @@ class _RegisterPageState extends State<RegisterPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response['message'] ?? 'Registration failed'),
+            content: Text(response['message'] ?? 'Pendaftaran gagal'),
             backgroundColor: Colors.red,
           ),
         );
@@ -61,7 +61,7 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('An error occurred: $e'),
+          content: Text('Terjadi kesalahan: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -74,8 +74,8 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Todo Calendar'),
-        backgroundColor: Colors.blue,
+        title: const Text('Kalender Tugas Saya'),
+        backgroundColor: Colors.cyan,
         foregroundColor: Colors.white,
       ),
       body: Container(
@@ -95,26 +95,31 @@ class _RegisterPageState extends State<RegisterPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
-                        'Register',
+                        'Daftar',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                          color: Colors.cyan,
                         ),
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
                         controller: _nameController,
                         decoration: InputDecoration(
-                          labelText: 'Name',
-                          prefixIcon: const Icon(Icons.person),
+                          labelText: 'Nama',
+                          prefixIcon:
+                              const Icon(Icons.person, color: Colors.cyan),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.cyan),
                           ),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your name';
+                            return 'Silakan masukkan nama Anda';
                           }
                           return null;
                         },
@@ -124,19 +129,24 @@ class _RegisterPageState extends State<RegisterPage> {
                         controller: _emailController,
                         decoration: InputDecoration(
                           labelText: 'Email',
-                          prefixIcon: const Icon(Icons.email),
+                          prefixIcon:
+                              const Icon(Icons.email, color: Colors.cyan),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.cyan),
                           ),
                         ),
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
+                            return 'Silakan masukkan email Anda';
                           }
                           if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                               .hasMatch(value)) {
-                            return 'Please enter a valid email';
+                            return 'Silakan masukkan email yang valid';
                           }
                           return null;
                         },
@@ -145,19 +155,24 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextFormField(
                         controller: _passwordController,
                         decoration: InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock),
+                          labelText: 'Kata Sandi',
+                          prefixIcon:
+                              const Icon(Icons.lock, color: Colors.cyan),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.cyan),
                           ),
                         ),
                         obscureText: true,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
+                            return 'Silakan masukkan kata sandi Anda';
                           }
                           if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
+                            return 'Kata sandi minimal 6 karakter';
                           }
                           return null;
                         },
@@ -169,7 +184,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _submit,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: Colors.cyan,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -179,8 +194,10 @@ class _RegisterPageState extends State<RegisterPage> {
                               ? const CircularProgressIndicator(
                                   color: Colors.white)
                               : const Text(
-                                  'Register',
-                                  style: TextStyle(fontSize: 16),
+                                  'Daftar',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
                                 ),
                         ),
                       ),
@@ -188,8 +205,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextButton(
                         onPressed: () => widget.toggleAuth(),
                         child: const Text(
-                          'Already have an account? Login',
-                          style: TextStyle(color: Colors.blue),
+                          'Sudah punya akun? Masuk',
+                          style: TextStyle(color: Colors.cyan),
                         ),
                       ),
                     ],

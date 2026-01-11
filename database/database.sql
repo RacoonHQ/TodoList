@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
+    photo VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -82,3 +83,6 @@ INSERT INTO todolists (user_id, title, date, priority, status) VALUES
 
 -- Note: The password hash '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi' corresponds to 'password'
 -- You can change these passwords in your production environment
+
+-- Migration for existing databases:
+-- ALTER TABLE users ADD COLUMN photo VARCHAR(255) DEFAULT NULL AFTER name;

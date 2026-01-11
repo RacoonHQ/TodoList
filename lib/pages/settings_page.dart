@@ -9,8 +9,8 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.blue,
+        title: const Text('Pengaturan'),
+        backgroundColor: Colors.cyan,
         foregroundColor: Colors.white,
       ),
       body: Container(
@@ -19,32 +19,13 @@ class SettingsPage extends StatelessWidget {
           children: [
             Card(
               child: ListTile(
-                leading: const Icon(Icons.notifications),
-                title: const Text('Notifications'),
+                leading: const Icon(Icons.notifications, color: Colors.cyan),
+                title: const Text('Notifikasi'),
                 trailing: Switch(
                   value: true,
                   onChanged: (value) {},
+                  activeThumbColor: Colors.cyan,
                 ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.dark_mode),
-                title: const Text('Dark Mode'),
-                trailing: Switch(
-                  value: false,
-                  onChanged: (value) {},
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Card(
-              child: ListTile(
-                leading: Icon(Icons.language),
-                title: Text('Language'),
-                subtitle: Text('English'),
-                trailing: Icon(Icons.arrow_forward_ios),
               ),
             ),
             const SizedBox(height: 30),
@@ -57,7 +38,8 @@ class SettingsPage extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                 ),
-                child: const Text('Logout'),
+                child: const Text('Keluar',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],

@@ -41,7 +41,8 @@ try {
     sendResponse(true, 'Registration successful', [
         'token' => $token,
         'user_id' => $userId,
-        'name' => $name
+        'name' => $name,
+        'photo' => null
     ]);
     
 } catch(PDOException $e) {

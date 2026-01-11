@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ApiService {
   static String _baseUrl = 'https://sayyid.bersama.cloud/api';
@@ -49,6 +50,7 @@ class ApiService {
               'user_id', int.tryParse(responseData['user_id'].toString()) ?? 0);
           await prefs.setString('user_name', responseData['name'] ?? '');
           await prefs.setString('user_email', email);
+          await prefs.setString('user_photo', responseData['photo'] ?? '');
           await prefs.setString(
               'user_created_at', responseData['created_at'] ?? '');
           setAuthToken(responseData['token'] ?? '');
@@ -90,6 +92,7 @@ class ApiService {
               'user_id', int.tryParse(responseData['user_id'].toString()) ?? 0);
           await prefs.setString('user_name', responseData['name'] ?? '');
           await prefs.setString('user_email', email);
+          await prefs.setString('user_photo', responseData['photo'] ?? '');
           await prefs.setString(
               'user_created_at', responseData['created_at'] ?? '');
           setAuthToken(responseData['token'] ?? '');
@@ -292,6 +295,87 @@ class ApiService {
         return {
           'success': false,
           'message': 'Server error: ${response.statusCode}'
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> updateProfile(
+      String? name, String? password) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id');
+
+      final body = <String, dynamic>{'user_id': userId};
+      if (name != null) body['name'] = name;
+      if (password != null) body['password'] = password;
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/update_profile.php'),
+        headers: _getHeaders(),
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] && name != null) {
+          await prefs.setString('user_name', name);
+        }
+        return {'success': data['success'], 'message': data['message']};
+      } else {
+        return {
+          'success': false,
+          'message': 'Server error: ${response.statusCode}'
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> uploadProfilePhoto(XFile xFile) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id');
+
+      var request = http.MultipartRequest(
+          'POST', Uri.parse('$_baseUrl/auth/upload_photo.php'));
+      request.headers.addAll({
+        'Accept': 'application/json',
+        if (_authToken != null) 'Authorization': 'Bearer $_authToken',
+      });
+
+      request.fields['user_id'] = userId.toString();
+
+      // Support for both Web and Mobile
+      final bytes = await xFile.readAsBytes();
+      request.files.add(http.MultipartFile.fromBytes(
+        'photo',
+        bytes,
+        filename: xFile.name,
+      ));
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        if (data['success'] && data['data'] != null) {
+          final String photoUrl = data['data']['photo_url'] ?? '';
+          await prefs.setString('user_photo', photoUrl);
+          return {
+            'success': true,
+            'message': data['message'],
+            'photo_url': photoUrl
+          };
+        }
+        return {'success': false, 'message': data['message']};
+      } else {
+        return {
+          'success': false,
+          'message': 'Server error: ${streamedResponse.statusCode}'
         };
       }
     } catch (e) {

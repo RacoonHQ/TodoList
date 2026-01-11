@@ -11,7 +11,7 @@ $email = trim($data->email);
 $password = $data->password;
 
 try {
-    $stmt = $conn->prepare("SELECT id, name, password FROM users WHERE email = ?");
+    $stmt = $conn->prepare("SELECT id, name, password, photo FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -24,7 +24,8 @@ try {
         sendResponse(true, 'Login successful', [
             'token' => $token,
             'user_id' => $user['id'],
-            'name' => $user['name']
+            'name' => $user['name'],
+            'photo' => $user['photo']
         ]);
     } else {
         sendResponse(false, 'Invalid email or password');

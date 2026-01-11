@@ -32,73 +32,92 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   void didUpdateWidget(CalendarPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    setState(() {}); // Rebuild when todos list changes
+    setState(() {});
+  }
+
+  Color _getPriorityColor(String priority) {
+    switch (priority) {
+      case 'high':
+        return Colors.red;
+      case 'medium':
+        return Colors.orange;
+      case 'low':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _translatePriority(String priority) {
+    switch (priority) {
+      case 'high':
+        return 'Tinggu';
+      case 'medium':
+        return 'Sedang';
+      case 'low':
+        return 'Rendah';
+      default:
+        return priority;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Todo Calendar'),
-        backgroundColor: Colors.blue,
+        title: const Text('Kalender'),
+        backgroundColor: Colors.cyan,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2)),
+              ],
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
                   onTap: _showMonthYearPicker,
                   behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        Text(
-                          DateFormat('MMMM yyyy').format(_focusedDay),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue,
-                          ),
-                        ),
-                        const Icon(Icons.arrow_drop_down, color: Colors.blue),
-                      ],
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.date_range),
-                      onPressed: () {
-                        setState(() {
-                          _isRangeMode = !_isRangeMode;
-                          if (!_isRangeMode) {
-                            _startDate = null;
-                            _endDate = null;
-                          }
-                        });
-                      },
-                      color: _isRangeMode ? Colors.blue : Colors.grey,
-                    ),
-                    if (_isRangeMode)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'Range Mode',
-                          style: TextStyle(color: Colors.blue, fontSize: 12),
+                  child: Row(
+                    children: [
+                      Text(
+                        DateFormat('MMMM yyyy').format(_focusedDay),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.cyan,
                         ),
                       ),
-                  ],
+                      const Icon(Icons.arrow_drop_down, color: Colors.cyan),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(_isRangeMode ? Icons.date_range : Icons.today),
+                  tooltip: _isRangeMode
+                      ? 'Matikan Mode Rentang'
+                      : 'Aktifkan Mode Rentang',
+                  onPressed: () {
+                    setState(() {
+                      _isRangeMode = !_isRangeMode;
+                      if (!_isRangeMode) {
+                        _startDate = null;
+                        _endDate = null;
+                      }
+                    });
+                  },
+                  color: _isRangeMode ? Colors.cyan : Colors.grey,
                 ),
               ],
             ),
@@ -108,6 +127,7 @@ class _CalendarPageState extends State<CalendarPage> {
             lastDay: DateTime.utc(2030, 12, 31),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
+            startingDayOfWeek: StartingDayOfWeek.monday,
             selectedDayPredicate: (day) {
               if (_isRangeMode) {
                 return isSameDay(_startDate, day) || isSameDay(_endDate, day);
@@ -144,6 +164,19 @@ class _CalendarPageState extends State<CalendarPage> {
                 _focusedDay = focusedDay;
               });
             },
+            calendarStyle: CalendarStyle(
+              todayDecoration: BoxDecoration(
+                  color: Colors.cyan.withOpacity(0.3), shape: BoxShape.circle),
+              selectedDecoration: const BoxDecoration(
+                  color: Colors.cyan, shape: BoxShape.circle),
+              rangeStartDecoration: const BoxDecoration(
+                  color: Colors.cyan, shape: BoxShape.circle),
+              rangeEndDecoration: const BoxDecoration(
+                  color: Colors.cyan, shape: BoxShape.circle),
+              rangeHighlightColor: Colors.cyan.withOpacity(0.1),
+              markerDecoration: const BoxDecoration(
+                  color: Colors.cyanAccent, shape: BoxShape.circle),
+            ),
             headerStyle: const HeaderStyle(
               formatButtonVisible: false,
               titleTextStyle: TextStyle(fontSize: 0),
@@ -158,7 +191,8 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTodoDialog,
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.cyan,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
     );
@@ -166,10 +200,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Widget _buildTodosForSelectedDay() {
     List<Map<String, dynamic>> filteredTodos = [];
+    final today = DateTime.now().toIso8601String().substring(0, 10);
 
     if (_isRangeMode) {
       if (_startDate != null && _endDate != null) {
-        // Filter by date range
         filteredTodos = widget.todos.where((todo) {
           try {
             final todoDate = DateTime.parse(todo['date']);
@@ -178,14 +212,11 @@ class _CalendarPageState extends State<CalendarPage> {
                 (todoDate.isAtSameMomentAs(_endDate!) ||
                     todoDate.isBefore(_endDate!));
           } catch (e) {
-            return false; // Skip invalid dates
+            return false;
           }
         }).toList();
-      } else {
-        filteredTodos = [];
       }
     } else {
-      // Filter by single selected date
       final selectedDate = _selectedDay != null
           ? DateFormat('yyyy-MM-dd').format(_selectedDay!)
           : DateFormat('yyyy-MM-dd').format(_focusedDay);
@@ -196,56 +227,119 @@ class _CalendarPageState extends State<CalendarPage> {
 
     if (filteredTodos.isEmpty) {
       return Center(
-        child: Text(
-          _isRangeMode
-              ? 'No todos in selected date range'
-              : 'No todos for this date',
-          style: const TextStyle(fontSize: 16, color: Colors.grey),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event_busy_outlined,
+                size: 60, color: Colors.grey.withOpacity(0.3)),
+            const SizedBox(height: 12),
+            Text(
+              _isRangeMode
+                  ? 'Tidak ada tugas dalam rentang ini'
+                  : 'Tidak ada tugas untuk hari ini',
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
         ),
       );
     }
 
+    // Sort: Pending first, then completed. If pending, overdue at bottom?
+    // Actually per user request: "lewat -> redup -> bottom".
+    // For a specific day's list, usually they all have same date.
+    // So "lewat" means its date is < today and its still pending.
+    filteredTodos.sort((a, b) {
+      if (a['status'] == b['status']) return 0;
+      return a['status'] == 'completed' ? 1 : -1;
+    });
+
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          child: Text(
-            _isRangeMode
-                ? '${filteredTodos.length} todos from ${DateFormat('MMM dd').format(_startDate!)} - ${DateFormat('MMM dd').format(_endDate!)}'
-                : '${filteredTodos.length} todos for ${DateFormat('MMM dd, yyyy').format(_selectedDay ?? _focusedDay)}',
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.blue),
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              const Icon(Icons.list_alt, size: 18, color: Colors.cyan),
+              const SizedBox(width: 8),
+              Text(
+                _isRangeMode ? 'Tugas dalam rentang' : 'Tugas Hari Ini',
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.cyan),
+              ),
+              const Spacer(),
+              Text('${filteredTodos.length} Tugas',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            ],
           ),
         ),
         Expanded(
           child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             itemCount: filteredTodos.length,
             itemBuilder: (context, index) {
               final todo = filteredTodos[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                child: ListTile(
-                  title: Text(todo['title']),
-                  subtitle: Text('Priority: ${todo['priority']}'),
-                  trailing: Checkbox(
-                    value: todo['status'] == 'completed',
-                    onChanged: (value) async {
-                      final response = await ApiService.updateTodo(
-                        int.parse(todo['id'].toString()),
-                        todo['title'],
-                        todo['date'],
-                        value! ? 'completed' : 'pending',
-                      );
+              final isCompleted = todo['status'] == 'completed';
+              final isOverdue =
+                  !isCompleted && todo['date'].toString().compareTo(today) < 0;
 
-                      if (response['success']) {
-                        widget.refreshTodos();
-                      }
-                    },
-                  ),
-                  leading: Container(
-                    width: 4,
-                    height: double.infinity,
-                    color: _getPriorityColor(todo['priority']),
+              return Opacity(
+                opacity: (isCompleted || isOverdue) ? 0.6 : 1.0,
+                child: Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  elevation: 1,
+                  child: ListTile(
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    leading: Container(
+                      width: 4,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: isCompleted
+                            ? Colors.grey
+                            : _getPriorityColor(todo['priority']),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    title: Text(
+                      todo['title'],
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        decoration:
+                            isCompleted ? TextDecoration.lineThrough : null,
+                        color: isOverdue ? Colors.red[900] : null,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_isRangeMode)
+                          Text(todo['date'],
+                              style: const TextStyle(fontSize: 12)),
+                        Text(
+                          'Prioritas: ${_translatePriority(todo['priority'])}',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: _getPriorityColor(todo['priority'])),
+                        ),
+                      ],
+                    ),
+                    trailing: Checkbox(
+                      value: isCompleted,
+                      shape: const CircleBorder(),
+                      activeColor: Colors.cyan,
+                      onChanged: (value) async {
+                        final response = await ApiService.updateTodo(
+                          int.parse(todo['id'].toString()),
+                          todo['title'],
+                          todo['date'],
+                          value! ? 'completed' : 'pending',
+                        );
+                        if (response['success']) widget.refreshTodos();
+                      },
+                    ),
                   ),
                 ),
               );
@@ -266,75 +360,37 @@ class _CalendarPageState extends State<CalendarPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          contentPadding: const EdgeInsets.all(20),
-          title: const Center(
-              child: Text(
-                  'Select Month & Year')), // Optional title to match style better or remove
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Center(child: Text('Pilih Bulan & Tahun')),
           content: SizedBox(
             height: 200,
             width: double.maxFinite,
             child: Row(
               children: [
-                // Month Picker
                 Expanded(
                   child: CupertinoPicker(
                     itemExtent: 40,
                     scrollController: FixedExtentScrollController(
-                      initialItem: selectedMonth - 1,
-                    ),
-                    selectionOverlay: Container(
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          top: BorderSide(color: Colors.blue, width: 1.5),
-                          bottom: BorderSide(color: Colors.blue, width: 1.5),
-                        ),
-                      ),
-                    ),
-                    onSelectedItemChanged: (index) {
-                      selectedMonth = index + 1;
-                    },
+                        initialItem: selectedMonth - 1),
+                    onSelectedItemChanged: (index) => selectedMonth = index + 1,
                     children: List.generate(12, (index) {
                       return Center(
-                        child: Text(
-                          DateFormat('MMM').format(DateTime(2022, index + 1)),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      );
+                          child: Text(DateFormat('MMM')
+                              .format(DateTime(2022, index + 1))));
                     }),
                   ),
                 ),
                 const SizedBox(width: 20),
-                // Year Picker
                 Expanded(
                   child: CupertinoPicker(
                     itemExtent: 40,
                     scrollController: FixedExtentScrollController(
-                      initialItem: selectedYear - startYear,
-                    ),
-                    selectionOverlay: Container(
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          top: BorderSide(color: Colors.blue, width: 1.5),
-                          bottom: BorderSide(color: Colors.blue, width: 1.5),
-                        ),
-                      ),
-                    ),
-                    onSelectedItemChanged: (index) {
-                      selectedYear = startYear + index;
-                    },
+                        initialItem: selectedYear - startYear),
+                    onSelectedItemChanged: (index) =>
+                        selectedYear = startYear + index,
                     children: List.generate(endYear - startYear + 1, (index) {
-                      return Center(
-                        child: Text(
-                          '${startYear + index}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      );
+                      return Center(child: Text('${startYear + index}'));
                     }),
                   ),
                 ),
@@ -343,34 +399,20 @@ class _CalendarPageState extends State<CalendarPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.black54),
-              ),
-            ),
+                onPressed: () => Navigator.pop(context),
+                child:
+                    const Text('Batal', style: TextStyle(color: Colors.grey))),
             TextButton(
               onPressed: () {
                 setState(() {
-                  final currentDay = _focusedDay.day;
-                  final safeDay = currentDay > 28
-                      ? 1
-                      : currentDay; // Use day 1 for months with fewer days
-                  _focusedDay = DateTime(selectedYear, selectedMonth, safeDay);
-                  if (_selectedDay != null) {
-                    final selectedDay = _selectedDay!.day;
-                    final selectedSafeDay = selectedDay > 28 ? 1 : selectedDay;
-                    _selectedDay =
-                        DateTime(selectedYear, selectedMonth, selectedSafeDay);
-                  }
+                  _focusedDay = DateTime(selectedYear, selectedMonth, 1);
+                  _selectedDay = DateTime(selectedYear, selectedMonth, 1);
                 });
                 Navigator.pop(context);
               },
-              child: const Text(
-                'OK',
-                style:
-                    TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-              ),
+              child: const Text('OK',
+                  style: TextStyle(
+                      color: Colors.cyan, fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -378,94 +420,62 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  Color _getPriorityColor(String priority) {
-    switch (priority) {
-      case 'high':
-        return Colors.red;
-      case 'medium':
-        return Colors.orange;
-      case 'low':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
   void _showAddTodoDialog() {
     final titleController = TextEditingController();
-    final priorityController = TextEditingController(text: 'medium');
+    String selectedPriority = 'medium';
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Todo'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Text('Tambah Tugas'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextFormField(
+            TextField(
               controller: titleController,
               decoration: const InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
-              ),
+                  labelText: 'Apa rencana Anda?', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 15),
             DropdownButtonFormField<String>(
-              initialValue: 'medium',
+              value: selectedPriority,
               decoration: const InputDecoration(
-                labelText: 'Priority',
-                border: OutlineInputBorder(),
-              ),
-              items: ['low', 'medium', 'high'].map((priority) {
-                return DropdownMenuItem(
-                  value: priority,
-                  child: Text(priority.toUpperCase()),
-                );
-              }).toList(),
-              onChanged: (value) {
-                priorityController.text = value!;
-              },
+                  labelText: 'Prioritas', border: OutlineInputBorder()),
+              items: ['low', 'medium', 'high']
+                  .map((p) => DropdownMenuItem(
+                      value: p,
+                      child: Text(p == 'high'
+                          ? 'Tinggi'
+                          : p == 'medium'
+                              ? 'Sedang'
+                              : 'Rendah')))
+                  .toList(),
+              onChanged: (v) => selectedPriority = v!,
             ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal')),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.cyan, foregroundColor: Colors.white),
             onPressed: () async {
               if (titleController.text.isNotEmpty) {
-                final date = _selectedDay != null
-                    ? DateFormat('yyyy-MM-dd').format(_selectedDay!)
-                    : DateFormat('yyyy-MM-dd').format(_focusedDay);
-
+                final date = DateFormat('yyyy-MM-dd')
+                    .format(_selectedDay ?? _focusedDay);
                 final response = await ApiService.createTodo(
-                  titleController.text,
-                  date,
-                  priorityController.text,
-                );
-
+                    titleController.text, date, selectedPriority);
                 if (response['success']) {
+                  if (!mounted) return;
                   Navigator.pop(context);
                   widget.refreshTodos();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Todo added successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(response['message']),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
                 }
               }
             },
-            child: const Text('Add'),
+            child: const Text('Tambah'),
           ),
         ],
       ),

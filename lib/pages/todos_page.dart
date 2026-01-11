@@ -16,17 +16,9 @@ class _TodosPageState extends State<TodosPage> {
   @override
   void initState() {
     super.initState();
-    // Initial load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.refreshTodos();
     });
-  }
-
-  @override
-  void didUpdateWidget(TodosPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Rebuild when todos list changes
-    setState(() {});
   }
 
   Color _getPriorityColor(String priority) {
@@ -42,307 +34,391 @@ class _TodosPageState extends State<TodosPage> {
     }
   }
 
+  String _translatePriority(String priority) {
+    switch (priority) {
+      case 'high':
+        return 'Tinggi';
+      case 'medium':
+        return 'Sedang';
+      case 'low':
+        return 'Rendah';
+      default:
+        return priority;
+    }
+  }
+
   void _showAddTodoDialog(BuildContext context) {
     final titleController = TextEditingController();
-    final priorityController = TextEditingController(text: 'medium');
+    String selectedPriority = 'medium';
+    final DateTime now = DateTime.now();
+    DateTime selectedDate = DateTime(now.year, now.month, now.day);
     final dateController = TextEditingController(
-      text: DateTime.now().toString().substring(0, 10),
+      text: DateFormat('yyyy-MM-dd').format(selectedDate),
     );
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Todo'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
-              ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Text('Tambah Tugas Baru'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    labelText: 'Apa yang ingin dikerjakan?',
+                    prefixIcon: const Icon(Icons.edit_note, color: Colors.cyan),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: dateController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Tanggal Pelaksanaan',
+                    prefixIcon:
+                        const Icon(Icons.calendar_today, color: Colors.cyan),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onTap: () async {
+                    final DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                    );
+                    if (picked != null) {
+                      setDialogState(() {
+                        selectedDate = picked;
+                        dateController.text =
+                            DateFormat('yyyy-MM-dd').format(picked);
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 15),
+                DropdownButtonFormField<String>(
+                  value: selectedPriority,
+                  decoration: InputDecoration(
+                    labelText: 'Prioritas Penting',
+                    prefixIcon:
+                        const Icon(Icons.priority_high, color: Colors.cyan),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  items: [
+                    const DropdownMenuItem(value: 'low', child: Text('Rendah')),
+                    const DropdownMenuItem(
+                        value: 'medium', child: Text('Sedang')),
+                    const DropdownMenuItem(
+                        value: 'high', child: Text('Tinggi')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) selectedPriority = value;
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 15),
-            TextFormField(
-              controller: dateController,
-              decoration: const InputDecoration(
-                labelText: 'Date (YYYY-MM-DD)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.datetime,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal', style: TextStyle(color: Colors.grey)),
             ),
-            const SizedBox(height: 15),
-            DropdownButtonFormField<String>(
-              initialValue: 'medium',
-              decoration: const InputDecoration(
-                labelText: 'Priority',
-                border: OutlineInputBorder(),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.cyan,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
-              items: ['low', 'medium', 'high'].map((priority) {
-                return DropdownMenuItem(
-                  value: priority,
-                  child: Text(priority.toUpperCase()),
-                );
-              }).toList(),
-              onChanged: (value) {
-                priorityController.text = value!;
+              onPressed: () async {
+                if (titleController.text.isNotEmpty) {
+                  final response = await ApiService.createTodo(
+                    titleController.text,
+                    dateController.text,
+                    selectedPriority,
+                  );
+
+                  if (response['success']) {
+                    Navigator.pop(context);
+                    widget.refreshTodos();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Tugas berhasil ditambahkan!'),
+                          backgroundColor: Colors.green),
+                    );
+                  }
+                }
               },
+              child: const Text('Simpan'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (titleController.text.isNotEmpty &&
-                  dateController.text.isNotEmpty) {
-                final response = await ApiService.createTodo(
-                  titleController.text,
-                  dateController.text,
-                  priorityController.text,
-                );
-
-                if (response['success']) {
-                  Navigator.pop(context);
-                  widget.refreshTodos();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Todo added successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(response['message']),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(now);
+    final today = DateTime(now.year, now.month, now.day);
+
+    final List<Map<String, dynamic>> overdueTodos = [];
+    final List<Map<String, dynamic>> todayTodos = [];
+    final List<Map<String, dynamic>> upcomingTodos = [];
+    final List<Map<String, dynamic>> completedTodos = [];
+
+    for (var todo in widget.todos) {
+      final dateStr = todo['date'].toString();
+      final status = todo['status'].toString();
+
+      if (status == 'completed') {
+        completedTodos.add(todo);
+        continue;
+      }
+
+      try {
+        final todoDate = DateTime.parse(dateStr);
+        if (dateStr == todayStr) {
+          todayTodos.add(todo);
+        } else if (todoDate.isBefore(today)) {
+          overdueTodos.add(todo);
+        } else {
+          upcomingTodos.add(todo);
+        }
+      } catch (e) {
+        upcomingTodos.add(todo);
+      }
+    }
+
+    // Sort priority within groups
+    void sortByPriority(List<Map<String, dynamic>> list) {
+      const priorityOrder = {'high': 0, 'medium': 1, 'low': 2};
+      list.sort((a, b) => (priorityOrder[a['priority']] ?? 1)
+          .compareTo(priorityOrder[b['priority']] ?? 1));
+    }
+
+    sortByPriority(todayTodos);
+    sortByPriority(upcomingTodos);
+    sortByPriority(overdueTodos);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All Todos'),
-        backgroundColor: Colors.blue,
+        title: const Text('Daftar Tugas'),
+        backgroundColor: Colors.cyan,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: widget.todos.isEmpty
-          ? const Center(
-              child: Text(
-                'No todos yet',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.assignment_turned_in_outlined,
+                      size: 80, color: Colors.cyan.withOpacity(0.3)),
+                  const SizedBox(height: 16),
+                  const Text('Ups! Belum ada tugas nih.',
+                      style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  const Text('Mulai dengan menekan tombol plus (+)',
+                      style: TextStyle(fontSize: 14, color: Colors.grey)),
+                ],
               ),
             )
-          : Builder(
-              builder: (context) {
-                final todayStr =
-                    DateFormat('yyyy-MM-dd').format(DateTime.now());
-                final todayTodos = widget.todos
-                    .where((todo) => todo['date'] == todayStr)
-                    .toList();
-
-                final highTodos = widget.todos
-                    .where((todo) => todo['priority'] == 'high')
-                    .toList();
-                final mediumTodos = widget.todos
-                    .where((todo) => todo['priority'] == 'medium')
-                    .toList();
-                final lowTodos = widget.todos
-                    .where((todo) => todo['priority'] == 'low')
-                    .toList();
-
-                return CustomScrollView(
-                  slivers: [
-                    // Today Section
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                        child: Text(
-                          'Hari Ini',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blueAccent,
-                          ),
-                        ),
+          : RefreshIndicator(
+              onRefresh: () async => widget.refreshTodos(),
+              child: CustomScrollView(
+                slivers: [
+                  if (todayTodos.isNotEmpty) ...[
+                    _buildSectionHeader('Tugas Hari Ini', Colors.cyan),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => _buildTodoCard(todayTodos[index]),
+                        childCount: todayTodos.length,
                       ),
-                    ),
-                    if (todayTodos.isEmpty)
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Text(
-                            'Tidak ada yang harus dilakukan hari ini',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => _buildTodoCard(todayTodos[index]),
-                          childCount: todayTodos.length,
-                        ),
-                      ),
-
-                    // Divider
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: Divider(thickness: 1),
-                      ),
-                    ),
-
-                    if (highTodos.isNotEmpty) ...[
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-                          child: Text(
-                            'High Priority',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => _buildTodoCard(highTodos[index]),
-                          childCount: highTodos.length,
-                        ),
-                      ),
-                    ],
-                    if (mediumTodos.isNotEmpty) ...[
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          child: Text(
-                            'Medium Priority',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) =>
-                              _buildTodoCard(mediumTodos[index]),
-                          childCount: mediumTodos.length,
-                        ),
-                      ),
-                    ],
-                    if (lowTodos.isNotEmpty) ...[
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          child: Text(
-                            'Low Priority',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => _buildTodoCard(lowTodos[index]),
-                          childCount: lowTodos.length,
-                        ),
-                      ),
-                    ],
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: 80), // Bottom padding
                     ),
                   ],
-                );
-              },
+                  if (upcomingTodos.isNotEmpty) ...[
+                    _buildSectionHeader('Tugas Mendatang', Colors.blueGrey),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) =>
+                            _buildTodoCard(upcomingTodos[index]),
+                        childCount: upcomingTodos.length,
+                      ),
+                    ),
+                  ],
+                  if (completedTodos.isNotEmpty) ...[
+                    _buildSectionHeader('Telah Selesai', Colors.green),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => _buildTodoCard(
+                            completedTodos[index],
+                            isCompleted: true),
+                        childCount: completedTodos.length,
+                      ),
+                    ),
+                  ],
+                  if (overdueTodos.isNotEmpty) ...[
+                    _buildSectionHeader('Tugas Terlewat', Colors.redAccent),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => _buildTodoCard(overdueTodos[index],
+                            isOverdue: true),
+                        childCount: overdueTodos.length,
+                      ),
+                    ),
+                  ],
+                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                ],
+              ),
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTodoDialog(context),
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
+        backgroundColor: Colors.cyan,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add_task),
       ),
     );
   }
 
-  Widget _buildTodoCard(Map<String, dynamic> todo) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      child: ListTile(
-        title: Text(todo['title']),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSectionHeader(String title, Color color) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+        child: Row(
           children: [
-            Text('Date: ${todo['date']}'),
-            Text('Priority: ${todo['priority']}'),
+            Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                    color: color, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(width: 8),
+            Text(title,
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold, color: color)),
           ],
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Checkbox(
-              value: todo['status'] == 'completed',
-              onChanged: (value) async {
-                final response = await ApiService.updateTodo(
-                  int.parse(todo['id'].toString()),
-                  todo['title'],
-                  todo['date'],
-                  value! ? 'completed' : 'pending',
-                );
+      ),
+    );
+  }
 
-                if (response['success']) {
-                  widget.refreshTodos();
-                }
-              },
+  Widget _buildTodoCard(Map<String, dynamic> todo,
+      {bool isCompleted = false, bool isOverdue = false}) {
+    final bool dimmed = isCompleted || isOverdue;
+
+    return Opacity(
+      opacity: dimmed ? 0.6 : 1.0,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        elevation: dimmed ? 0 : 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: isOverdue
+              ? BorderSide(color: Colors.red.withOpacity(0.3))
+              : BorderSide.none,
+        ),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            width: 4,
+            height: 30,
+            decoration: BoxDecoration(
+              color: isCompleted
+                  ? Colors.grey
+                  : _getPriorityColor(todo['priority']),
+              borderRadius: BorderRadius.circular(2),
             ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () async {
-                final response = await ApiService.deleteTodo(
-                    int.parse(todo['id'].toString()));
-                if (response['success']) {
-                  widget.refreshTodos();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Todo deleted successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
+          ),
+          title: Text(
+            todo['title'],
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              decoration: isCompleted ? TextDecoration.lineThrough : null,
+              color: isOverdue ? Colors.red[900] : null,
+            ),
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Row(
+              children: [
+                Icon(Icons.calendar_today, size: 12, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Text(todo['date'],
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                const SizedBox(width: 12),
+                Icon(Icons.flag,
+                    size: 12, color: _getPriorityColor(todo['priority'])),
+                const SizedBox(width: 4),
+                Text(_translatePriority(todo['priority']),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: _getPriorityColor(todo['priority']))),
+              ],
+            ),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Checkbox(
+                value: isCompleted,
+                shape: const CircleBorder(),
+                activeColor: Colors.cyan,
+                onChanged: (value) async {
+                  if (value == null) return;
+                  final response = await ApiService.updateTodo(
+                    int.parse(todo['id'].toString()),
+                    todo['title'],
+                    todo['date'],
+                    value ? 'completed' : 'pending',
                   );
-                }
-              },
-            ),
-          ],
+                  if (response['success']) widget.refreshTodos();
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline,
+                    color: Colors.redAccent, size: 20),
+                onPressed: () => _confirmDelete(todo),
+              ),
+            ],
+          ),
         ),
-        leading: Container(
-          width: 4,
-          height: double.infinity,
-          color: _getPriorityColor(todo['priority']),
-        ),
+      ),
+    );
+  }
+
+  void _confirmDelete(Map<String, dynamic> todo) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Tugas?'),
+        content: const Text('Tugas ini akan dihapus secara permanen.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal')),
+          TextButton(
+            onPressed: () async {
+              final response =
+                  await ApiService.deleteTodo(int.parse(todo['id'].toString()));
+              if (response['success']) {
+                Navigator.pop(context);
+                widget.refreshTodos();
+              }
+            },
+            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }
