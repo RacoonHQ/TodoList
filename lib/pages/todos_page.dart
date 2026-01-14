@@ -105,7 +105,7 @@ class _TodosPageState extends State<TodosPage> {
                 ),
                 const SizedBox(height: 15),
                 DropdownButtonFormField<String>(
-                  value: selectedPriority,
+                  initialValue: selectedPriority,
                   decoration: InputDecoration(
                     labelText: 'Prioritas Penting',
                     prefixIcon:
@@ -113,12 +113,10 @@ class _TodosPageState extends State<TodosPage> {
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10)),
                   ),
-                  items: [
-                    const DropdownMenuItem(value: 'low', child: Text('Rendah')),
-                    const DropdownMenuItem(
-                        value: 'medium', child: Text('Sedang')),
-                    const DropdownMenuItem(
-                        value: 'high', child: Text('Tinggi')),
+                  items: const [
+                    DropdownMenuItem(value: 'low', child: Text('Rendah')),
+                    DropdownMenuItem(value: 'medium', child: Text('Sedang')),
+                    DropdownMenuItem(value: 'high', child: Text('Tinggi')),
                   ],
                   onChanged: (value) {
                     if (value != null) selectedPriority = value;

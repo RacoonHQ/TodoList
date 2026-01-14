@@ -8,12 +8,14 @@ class ProfilePage extends StatefulWidget {
   final String userName;
   final int userId;
   final String userEmail;
+  final VoidCallback logout;
 
   const ProfilePage({
     super.key,
     required this.userName,
     required this.userId,
     required this.userEmail,
+    required this.logout,
   });
 
   @override
@@ -326,6 +328,25 @@ class _ProfilePageState extends State<ProfilePage> {
                   onPressed: _showEditPasswordDialog,
                   child:
                       const Text('Ubah', style: TextStyle(color: Colors.cyan)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: widget.logout,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Keluar',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),

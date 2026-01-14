@@ -5,7 +5,6 @@ import 'pages/calendar_page.dart';
 import 'pages/todos_page.dart';
 import 'pages/notes_page.dart';
 import 'pages/profile_page.dart';
-import 'pages/settings_page.dart';
 import 'auth/login_page.dart';
 import 'auth/register_page.dart';
 
@@ -30,7 +29,7 @@ class _MainHomeScreenState extends State<MainHomeScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadUserData();
     _loadTodos();
     _loadNotes();
@@ -103,8 +102,8 @@ class _MainHomeScreenState extends State<MainHomeScreen>
         userName: _userName,
         userId: _userId,
         userEmail: _userEmail,
+        logout: _logout,
       ),
-      SettingsPage(logout: _logout),
     ];
   }
 
@@ -148,11 +147,6 @@ class _MainHomeScreenState extends State<MainHomeScreen>
             icon: Icon(Icons.person_outline_rounded),
             activeIcon: Icon(Icons.person),
             label: 'Profil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: 'Pengaturan',
           ),
         ],
       ),

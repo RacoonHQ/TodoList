@@ -9,8 +9,8 @@ A complete Flutter ToDoList application with calendar integration, user authenti
 - **5 Bottom Navigation Tabs**:
   - Calendar: Daily todo view with date selection
   - Todos: Complete todo list with CRUD operations
-  - Articles: Dynamic content from MySQL database
-  - Profile: User profile information
+  - Notes: Personal notes management with text and images
+  - Profile: User profile with photo upload and editing
   - Settings: App settings and logout
 - **Todo Management**: Create, read, update, and delete todos
 - **Priority Levels**: Low, medium, and high priority todos
@@ -55,8 +55,11 @@ todo_calendar_app/
 │   │   ├── create.php         # Create new todo
 │   │   ├── update.php         # Update existing todo
 │   │   └── delete.php         # Delete todo
-│   └── articles/
-│       └── index.php          # Get articles
+│   ├── notes/
+│   │   ├── index.php          # Get notes for user
+│   │   ├── create.php         # Create new note
+│   │   └── delete.php         # Delete note
+│   └── image-pp/              # Profile picture storage 
 ├── database/
 │   └── database.sql           # Database schema and sample data
 ├── assets/
@@ -71,24 +74,25 @@ todo_calendar_app/
 - `email`: Unique email address
 - `password`: Hashed password
 - `name`: User display name
+- `photo`: Profile picture URL (added)
 - `created_at`: Account creation timestamp
 
-### Todos Table
+### Todolists Table
 - `id`: Primary key
 - `user_id`: Foreign key to users table
 - `title`: Todo title
 - `date`: Due date (YYYY-MM-DD format)
-- `priority`: Low, medium, or high
-- `status`: Pending or completed
+- `priority`: low, medium, or high
+- `status`: pending or completed
 - `created_at`: Creation timestamp
 
-### Articles Table
+### Notes Table
 - `id`: Primary key
-- `title`: Article title
-- `content`: Article content
-- `image_url`: Featured image URL
-- `created_at`: Publication timestamp
-
+- `user_id`: Foreign key to users table
+- `title`: Note title
+- `content`: Note content
+- `image_url`: Optional image URL
+- `created_at`: Creation timestamp
 ## Setup Instructions
 
 ### 1. Backend Setup (PHP + MySQL)
@@ -139,19 +143,27 @@ todo_calendar_app/
 ### Authentication
 - `POST /api/auth/login.php` - User login
   - Request: `{ "email": "user@example.com", "password": "password" }`
-  - Response: `{ "success": true, "token": "jwt_token", "user_id": 1, "name": "John Doe" }`
+  - Response: `{ "success": true, "message": "Login successful", "data": { "token": "...", "user_id": 1, "name": "...", "photo": "..." } }`
 
 - `POST /api/auth/register.php` - User registration
   - Request: `{ "email": "user@example.com", "password": "password", "name": "John Doe" }`
-  - Response: `{ "success": true, "token": "jwt_token", "user_id": 1, "name": "John Doe" }`
+  - Response: `{ "success": true, "message": "Registration successful", "data": { "token": "...", "user_id": 1, "name": "...", "photo": null } }`
+
+- `POST /api/auth/update_profile.php` - Update profile info
+  - Request: `{ "user_id": 1, "name": "New Name", "password": "new_password" }`
+  - Response: `{ "success": true, "message": "Profil berhasil diperbarui" }`
+
+- `POST /api/auth/upload_photo.php` - Upload profile picture
+  - Request: `multipart/form-data` with fields `user_id` and `photo` (file)
+  - Response: `{ "success": true, "message": "...", "data": { "photo_url": "..." } }`
 
 ### Todos
 - `GET /api/todos/index.php?user_id=1` - Get user todos
-  - Response: `{ "success": true, "todos": [...] }`
+  - Response: `{ "success": true, "message": "...", "data": { "todos": [...] } }`
 
 - `POST /api/todos/create.php` - Create new todo
   - Request: `{ "user_id": 1, "title": "New Task", "date": "2024-01-15", "priority": "high" }`
-  - Response: `{ "success": true, "todo": {...} }`
+  - Response: `{ "success": true, "message": "...", "data": { "todo": {...} } }`
 
 - `PUT /api/todos/update.php` - Update todo
   - Request: `{ "id": 1, "title": "Updated Task", "date": "2024-01-15", "status": "completed" }`
@@ -160,10 +172,17 @@ todo_calendar_app/
 - `DELETE /api/todos/delete.php?id=1` - Delete todo
   - Response: `{ "success": true, "message": "Todo deleted successfully" }`
 
-### Articles
-- `GET /api/articles/index.php` - Get all articles
-  - Response: `{ "success": true, "articles": [...] }`
+### Notes
+- `GET /api/notes/index.php?user_id=1` - Get user notes
+  - Response: `{ "success": true, "message": "...", "data": { "notes": [...] } }`
 
+- `POST /api/notes/create.php` - Create new note
+  - Request: `{ "user_id": 1, "title": "Note Title", "content": "Note content..." }`
+  - Response: `{ "success": true, "message": "Note created successfully" }`
+
+- `POST /api/notes/delete.php` - Delete note
+  - Request: `{ "id": 1 }`
+  - Response: `{ "success": true, "message": "Note deleted successfully" }`
 ## Default Users
 
 The database comes with sample users for testing:

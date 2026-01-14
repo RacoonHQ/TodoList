@@ -74,7 +74,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kalender Tugas Saya'),
+        title: const Text('Register'),
         backgroundColor: Colors.cyan,
         foregroundColor: Colors.white,
       ),

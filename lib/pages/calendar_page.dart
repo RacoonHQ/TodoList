@@ -439,7 +439,7 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
             const SizedBox(height: 15),
             DropdownButtonFormField<String>(
-              value: selectedPriority,
+              initialValue: selectedPriority,
               decoration: const InputDecoration(
                   labelText: 'Prioritas', border: OutlineInputBorder()),
               items: ['low', 'medium', 'high']
