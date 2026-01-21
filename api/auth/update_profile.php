@@ -5,7 +5,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendResponse(false, 'Method not allowed');
 }
 
-$data = json_decode(file_get_contents('php://input'), true);
+// Check if data is sent as JSON or form data
+$contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+if (strpos($contentType, 'application/json') !== false) {
+    // JSON input
+    $data = json_decode(file_get_contents('php://input'), true);
+} else {
+    // Form data input (x-www-form-urlencoded)
+    $data = $_POST;
+}
+
 $userId = $data['user_id'] ?? null;
 $name = $data['name'] ?? null;
 $password = $data['password'] ?? null;
