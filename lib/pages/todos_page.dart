@@ -210,12 +210,7 @@ class _TodosPageState extends State<TodosPage> {
     sortByPriority(overdueTodos);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Daftar Tugas'),
-        backgroundColor: Colors.cyan,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
+      backgroundColor: Colors.white,
       body: widget.todos.isEmpty
           ? Center(
               child: Column(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../api_service.dart';
-import '../home_screen.dart';
+import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   final Function toggleAuth;
@@ -39,17 +39,22 @@ class _RegisterPageState extends State<RegisterPage> {
       );
 
       if (response['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pendaftaran berhasil!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Pendaftaran berhasil! Silakan login.'),
+              backgroundColor: Colors.green,
+            ),
+          );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainHomeScreen()),
-        );
+          // Navigate to login page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => LoginPage(toggleAuth: widget.toggleAuth)),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
