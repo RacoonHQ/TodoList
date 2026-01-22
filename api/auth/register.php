@@ -1,7 +1,16 @@
 <?php
 require_once '../config.php';
 
-$data = json_decode(file_get_contents("php://input"));
+// Check if data is sent as JSON or form data
+$contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+if (strpos($contentType, 'application/json') !== false) {
+    // JSON input
+    $data = json_decode(file_get_contents("php://input"));
+} else {
+    // Form data input (x-www-form-urlencoded)
+    $data = (object) $_POST;
+}
 
 if (!isset($data->email) || !isset($data->password) || !isset($data->name)) {
     sendResponse(false, 'Name, email, and password are required');
