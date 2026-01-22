@@ -1,244 +1,95 @@
 # Todo Calendar App
 
-A complete Flutter ToDoList application with calendar integration, user authentication, and PHP MySQL backend.
+Aplikasi ToDoList lengkap dengan integrasi kalender, autentikasi pengguna, dan backend PHP MySQL.
 
-## Features
+## 🚀 Fitur Utama
 
-- **User Authentication**: Login and registration with JWT token-based authentication
-- **Calendar View**: Interactive calendar to view and manage todos by date
-- **5 Bottom Navigation Tabs**:
-  - Calendar: Daily todo view with date selection
-  - Todos: Complete todo list with CRUD operations
-  - Notes: Personal notes management with text and images
-  - Profile: User profile with photo upload and editing
-  - Settings: App settings and logout
-- **Todo Management**: Create, read, update, and delete todos
-- **Priority Levels**: Low, medium, and high priority todos
-- **Status Tracking**: Pending and completed todo status
-- **Responsive Design**: Material Design with beautiful UI components
-- **Data Persistence**: SharedPreferences for auth tokens, MySQL for data storage
+- **Autentikasi Pengguna**: Login dan pendaftaran menggunakan autentikasi berbasis token JWT yang aman.
+- **Tampilan Kalender**: Kalender interaktif untuk melihat dan mengelola tugas berdasarkan tanggal, dilengkapi dengan pemilih bulan/tahun dan mode rentang.
+- **Tab Navigasi Bawah**:
+  - **Kalender**: Fokus pada tugas harian dengan antarmuka kalender yang cantik.
+  - **Tugas (Todos)**: Daftar tugas lengkap dengan pengelompokan prioritas (Terlewat, Hari Ini, Mendatang, Selesai).
+  - **Catatan (Notes)**: Manajemen catatan pribadi dengan teks kaya dan kemampuan **Upload Gambar**.
+  - **Profil**: Kelola detail profil, ubah kata sandi, dan unggah foto profil.
+- **Tingkat Prioritas**: Prioritas Rendah, Sedang, dan Tinggi dengan indikator visual status.
+- **Manajemen Gambar**: Dukungan penuh untuk foto profil dan lampiran gambar pada catatan.
+- **Perbaikan Cross-Platform**: Dioptimalkan untuk Web, Windows, dan Mobile (menggunakan `MemoryImage` dan `Uint8List`).
+- **Dukungan CORS**: Konfigurasi `.htaccess` yang sudah terpasang untuk pemuatan gambar yang lancar di lingkungan web.
 
-## Tech Stack
+## 🛠 Teknologi yang Digunakan
 
 ### Frontend (Flutter)
-- Flutter 3.19+
-- Dart 3.4+
-- http: ^1.2.1 (API communication)
-- shared_preferences: ^2.3.0 (Local storage)
-- table_calendar: ^3.1.2 (Calendar widget)
-- intl: ^0.19.0 (Date formatting)
-- cached_network_image: ^3.3.1 (Image caching)
+- Flutter 3.19+ | Dart 3.4+
+- `http`: Komunikasi API.
+- `shared_preferences`: Penyimpanan status lokal.
+- `table_calendar`: Logika kalender interaktif.
+- `cached_network_image`: Pemuatan dan caching gambar yang dioptimalkan.
+- `image_picker`: Integrasi kamera dan galeri.
 
 ### Backend (PHP)
-- PHP 8.2+
-- MySQL 8.0+
-- RESTful API architecture
-- JWT authentication
-- PDO for database operations
+- PHP 8.2+ | MySQL 8.0+
+- API RESTful dengan dukungan JSON/Multipart.
+- PDO untuk operasi database yang aman.
+- Konstruksi URL dinamis untuk aset gambar.
 
-## Project Structure
+## 📁 Struktur Proyek
 
 ```
 todo_calendar_app/
 ├── lib/
-│   ├── main.dart              # App entry point and AuthWrapper
-│   ├── auth_screen.dart       # Login and registration screens
-│   ├── home_screen.dart       # Main app with 5 tabs
-│   └── api_service.dart       # HTTP client and API calls
+│   ├── main.dart              # Titik masuk aplikasi (Entry point)
+│   ├── auth/                  # Layar autentikasi
+│   ├── pages/                 # Halaman tab (tugas, catatan, kalender, profil)
+│   ├── home_screen.dart       # Pengontrol tab utama
+│   └── api_service.dart       # Logika API terpusat
 ├── api/
-│   ├── config.php             # Database configuration and utilities
-│   ├── auth/
-│   │   ├── login.php          # User login endpoint
-│   │   └── register.php       # User registration endpoint
-│   ├── todos/
-│   │   ├── index.php          # Get todos for user
-│   │   ├── create.php         # Create new todo
-│   │   ├── update.php         # Update existing todo
-│   │   └── delete.php         # Delete todo
-│   ├── notes/
-│   │   ├── index.php          # Get notes for user
-│   │   ├── create.php         # Create new note
-│   │   └── delete.php         # Delete note
-│   └── image-pp/              # Profile picture storage 
+│   ├── config.php             # Logika inti & konfigurasi DB
+│   ├── auth/                  # Endpoint Pengguna & Profil
+│   ├── todos/                 # Endpoint manajemen tugas
+│   ├── notes/                 # Endpoint catatan & upload gambar
+│   ├── image-pp/              # Penyimpanan foto profil & .htaccess
+│   └── image-note/            # Penyimpanan gambar catatan & .htaccess
 ├── database/
-│   └── database.sql           # Database schema and sample data
-├── assets/
-│   └── images/                # Local image assets
-└── pubspec.yaml              # Flutter dependencies
+│   └── database.sql           # Skema SQL
+└── LICENSE                    # Lisensi MIT
 ```
 
-## Database Schema
+## 🚀 Instruksi Instalasi
 
-### Users Table
-- `id`: Primary key
-- `email`: Unique email address
-- `password`: Hashed password
-- `name`: User display name
-- `photo`: Profile picture URL (added)
-- `created_at`: Account creation timestamp
+### 1. Pengaturan Backend
+1. Unggah folder `api/` ke server Anda.
+2. Impor `database/database.sql` ke instance MySQL Anda.
+3. Perbarui kredensial database di `api/config.php`.
+4. **Catatan**: Pastikan server memiliki izin tulis (write permissions) untuk folder `image-pp/` dan `image-note/`.
 
-### Todolists Table
-- `id`: Primary key
-- `user_id`: Foreign key to users table
-- `title`: Todo title
-- `date`: Due date (YYYY-MM-DD format)
-- `priority`: low, medium, or high
-- `status`: pending or completed
-- `created_at`: Creation timestamp
+### 2. Pengaturan Frontend
+1. Jalankan perintah `flutter pub get`.
+2. Buka `lib/api_service.dart` dan perbarui `_baseUrl` dengan alamat server Anda.
+3. Jalankan menggunakan `flutter run -d chrome --web-renderer html` (untuk web) atau cukup `flutter run`.
 
-### Notes Table
-- `id`: Primary key
-- `user_id`: Foreign key to users table
-- `title`: Note title
-- `content`: Note content
-- `image_url`: Optional image URL
-- `created_at`: Creation timestamp
-## Setup Instructions
+## 📡 Ringkasan Endpoint API
 
-### 1. Backend Setup (PHP + MySQL)
+### Autentikasi
+- `POST /auth/login.php` - Login pengguna.
+- `POST /auth/register.php` - Daftar pengguna baru.
+- `POST /auth/upload_photo.php` - Unggah foto profil (*Multipart*).
 
-1. **Upload API Files**:
-   - Upload the entire `api/` folder to your web server (e.g., `domain.com/api/`)
-   - Ensure PHP 8.2+ is installed on your server
+### Tugas (Todos)
+- `GET /todos/index.php?user_id=ID` - Ambil daftar tugas.
+- `POST /todos/create.php` - Tambah tugas baru.
+- `PUT /todos/update.php` - Ubah status atau edit tugas.
 
-2. **Database Setup**:
-   - Create a MySQL database named `todo_calendar_db`
-   - Import `database/database.sql` into your MySQL database using phpMyAdmin or command line:
-     ```sql
-     mysql -u username -p todo_calendar_db < database.sql
-     ```
+### Catatan (Notes)
+- `GET /notes/index.php?user_id=ID` - Ambil daftar catatan.
+- `POST /notes/upload_image.php` - Unggah gambar untuk catatan (*Multipart*).
+- `POST /notes/create.php` - Simpan catatan dengan opsional `image_url`.
 
-3. **Configure Database Connection**:
-   - Edit `api/config.php` and update the database credentials:
-     ```php
-     $host = 'localhost';        // Your database host
-     $dbname = 'todo_calendar_db'; // Your database name
-     $username = 'root';         // Your database username
-     $password = '';             // Your database password
-     ```
+## 🔐 Keamanan & Optimasi
+- **Perbaikan CORS**: File `.htaccess` yang disertakan mengizinkan akses browser standar ke gambar statis.
+- **Pencegahan Race Condition**: Pemuatan data diurutkan setelah sinkronisasi pengguna berhasil.
+- **User-Agent Mocking**: Frontend menyertakan header khusus untuk melewati blokir beberapa host gambar.
 
-4. **Test API Endpoints**:
-   - Visit `domain.com/api/auth/login.php` to ensure the API is accessible
-
-### 2. Frontend Setup (Flutter)
-
-1. **Install Dependencies**:
-   ```bash
-   flutter pub get
-   ```
-
-2. **Update API Base URL**:
-   - In `lib/api_service.dart`, update the base URL:
-     ```dart
-     static String _baseUrl = 'https://your-domain.com/api';
-     ```
-
-3. **Run the App**:
-   ```bash
-   flutter run
-   ```
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/login.php` - User login
-  - Request: `{ "email": "user@example.com", "password": "password" }`
-  - Response: `{ "success": true, "message": "Login successful", "data": { "token": "...", "user_id": 1, "name": "...", "photo": "..." } }`
-
-- `POST /api/auth/register.php` - User registration
-  - Request: `{ "email": "user@example.com", "password": "password", "name": "John Doe" }`
-  - Response: `{ "success": true, "message": "Registration successful", "data": { "token": "...", "user_id": 1, "name": "...", "photo": null } }`
-
-- `POST /api/auth/update_profile.php` - Update profile info
-  - Request: `{ "user_id": 1, "name": "New Name", "password": "new_password" }`
-  - Response: `{ "success": true, "message": "Profil berhasil diperbarui" }`
-
-- `POST /api/auth/upload_photo.php` - Upload profile picture
-  - Request: `multipart/form-data` with fields `user_id` and `photo` (file)
-  - Response: `{ "success": true, "message": "...", "data": { "photo_url": "..." } }`
-
-### Todos
-- `GET /api/todos/index.php?user_id=1` - Get user todos
-  - Response: `{ "success": true, "message": "...", "data": { "todos": [...] } }`
-
-- `POST /api/todos/create.php` - Create new todo
-  - Request: `{ "user_id": 1, "title": "New Task", "date": "2024-01-15", "priority": "high" }`
-  - Response: `{ "success": true, "message": "...", "data": { "todo": {...} } }`
-
-- `PUT /api/todos/update.php` - Update todo
-  - Request: `{ "id": 1, "title": "Updated Task", "date": "2024-01-15", "status": "completed" }`
-  - Response: `{ "success": true, "message": "Todo updated successfully" }`
-
-- `DELETE /api/todos/delete.php?id=1` - Delete todo
-  - Response: `{ "success": true, "message": "Todo deleted successfully" }`
-
-### Notes
-- `GET /api/notes/index.php?user_id=1` - Get user notes
-  - Response: `{ "success": true, "message": "...", "data": { "notes": [...] } }`
-
-- `POST /api/notes/create.php` - Create new note
-  - Request: `{ "user_id": 1, "title": "Note Title", "content": "Note content..." }`
-  - Response: `{ "success": true, "message": "Note created successfully" }`
-
-- `POST /api/notes/delete.php` - Delete note
-  - Request: `{ "id": 1 }`
-  - Response: `{ "success": true, "message": "Note deleted successfully" }`
-## Default Users
-
-The database comes with sample users for testing:
-
-| Email | Password | Name |
-|-------|----------|------|
-| john@example.com | password | John Doe |
-| jane@example.com | password | Jane Smith |
-| admin@example.com | password | Admin User |
-
-## Security Features
-
-- **Password Hashing**: All passwords are securely hashed using PHP's `password_hash()`
-- **JWT Authentication**: Secure token-based authentication with expiration
-- **SQL Injection Prevention**: PDO prepared statements for all database operations
-- **CORS Configuration**: Proper Cross-Origin Resource Sharing setup
-- **Input Validation**: Server-side validation for all user inputs
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Error**:
-   - Check your database credentials in `api/config.php`
-   - Ensure MySQL server is running
-   - Verify database name and user permissions
-
-2. **CORS Errors**:
-   - Ensure your API server has proper CORS headers
-   - Check that the base URL in `api_service.dart` is correct
-
-3. **Authentication Issues**:
-   - Clear app data and try logging in again
-   - Check that JWT tokens are being stored properly
-   - Verify token expiration time (30 days by default)
-
-4. **Calendar Display Issues**:
-   - Ensure `table_calendar` package is properly installed
-   - Check that date formatting matches API expectations (YYYY-MM-DD)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is open source and available under the MIT License.
-
-## Support
-
-For issues and questions, please create an issue in the project repository.
+## 📄 Lisensi
+Proyek ini dilisensikan di bawah **Lisensi MIT**. Lihat file `LICENSE` untuk detail lebih lanjut.
 
 ---
-
-**Happy Coding! 🚀**

@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../api_service.dart';
 
@@ -21,6 +24,8 @@ class _NotesPageState extends State<NotesPage> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  XFile? _pickedImage;
+  Uint8List? _pickedImageBytes;
   bool _isSaving = false;
 
   @override
@@ -30,9 +35,57 @@ class _NotesPageState extends State<NotesPage> {
     super.dispose();
   }
 
+  Future<void> _pickImage([StateSetter? dialogState]) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image == null) return;
+
+      final int sizeInBytes = await image.length();
+      final double sizeInMb = sizeInBytes / (1024 * 1024);
+
+      if (sizeInMb > 1) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Ukuran gambar maksimal 1MB'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      final bytes = await image.readAsBytes();
+
+      if (dialogState != null) {
+        dialogState(() {
+          _pickedImage = image;
+          _pickedImageBytes = bytes;
+        });
+      }
+
+      setState(() {
+        _pickedImage = image;
+        _pickedImageBytes = bytes;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memilih gambar: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   void _showAddNoteDialog() {
     _titleController.clear();
     _contentController.clear();
+    _pickedImage = null;
+    _pickedImageBytes = null;
 
     showDialog(
       context: context,
@@ -71,10 +124,64 @@ class _NotesPageState extends State<NotesPage> {
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10)),
                         ),
-                        maxLines: 5,
+                        maxLines: 3,
                         validator: (value) =>
                             value!.isEmpty ? 'Silakan masukkan konten' : null,
                       ),
+                      const SizedBox(height: 15),
+                      if (_pickedImageBytes != null) ...[
+                        Container(
+                          height: 150,
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 15),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            image: DecorationImage(
+                              image: MemoryImage(_pickedImageBytes!),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => _pickImage(setState),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          icon: const Icon(Icons.change_circle, size: 20),
+                          label: const Text('Ganti Gambar'),
+                        ),
+                      ] else
+                        InkWell(
+                          onTap: () => _pickImage(setState),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                width: 1.5,
+                                style: BorderStyle.solid,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.grey.shade100,
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(Icons.image,
+                                    size: 50, color: Colors.grey.shade400),
+                                const SizedBox(height: 8),
+                                Text('Ketuk untuk menambahkan gambar',
+                                    style:
+                                        TextStyle(color: Colors.grey.shade600)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 15),
                     ],
                   ),
                 ),
@@ -97,21 +204,66 @@ class _NotesPageState extends State<NotesPage> {
                       : () async {
                           if (_formKey.currentState!.validate()) {
                             setState(() => _isSaving = true);
-                            final result = await ApiService.createNote(
-                              _titleController.text,
-                              _contentController.text,
-                            );
-                            setState(() => _isSaving = false);
+                            try {
+                              String? imageUrl;
 
-                            if (result['success']) {
+                              // Upload image if exists
+                              if (_pickedImage != null) {
+                                final imageResponse =
+                                    await ApiService.uploadNoteImage(
+                                        _pickedImage!);
+                                if (!imageResponse['success']) {
+                                  if (!mounted) return;
+                                  setState(() => _isSaving = false);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Gagal mengunggah gambar: ${imageResponse['message']}'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  return;
+                                }
+                                imageUrl = imageResponse['image_url'];
+                              }
+
+                              // Create note with or without image
+                              final result = await ApiService.createNote(
+                                _titleController.text,
+                                _contentController.text,
+                                imageUrl: imageUrl,
+                              );
+
                               if (!mounted) return;
-                              Navigator.pop(context);
-                              widget.refreshNotes();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
+                              setState(() => _isSaving = false);
+
+                              if (result['success']) {
+                                Navigator.pop(context);
+                                widget.refreshNotes();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
                                     content:
                                         Text('Catatan berhasil ditambahkan!'),
-                                    backgroundColor: Colors.green),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Gagal menambahkan catatan: ${result['message']}'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              setState(() => _isSaving = false);
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Terjadi kesalahan: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
                               );
                             }
                           }
@@ -121,7 +273,10 @@ class _NotesPageState extends State<NotesPage> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
                       : const Text('Simpan'),
                 ),
               ],
@@ -175,10 +330,14 @@ class _NotesPageState extends State<NotesPage> {
                           if (article['image_url'] != null &&
                               article['image_url'].isNotEmpty)
                             CachedNetworkImage(
-                              imageUrl: article['image_url'],
+                              imageUrl: article['image_url'].toString().trim(),
                               height: 180,
                               width: double.infinity,
                               fit: BoxFit.cover,
+                              httpHeaders: const {
+                                'User-Agent':
+                                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                              },
                               placeholder: (context, url) => Container(
                                 height: 180,
                                 color: Colors.grey[200],
@@ -189,8 +348,20 @@ class _NotesPageState extends State<NotesPage> {
                               errorWidget: (context, url, error) => Container(
                                 height: 180,
                                 color: Colors.grey[100],
-                                child: const Icon(Icons.broken_image_outlined,
-                                    size: 50, color: Colors.grey),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.broken_image_outlined,
+                                        size: 40, color: Colors.grey),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Gagal memuat gambar',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600]),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           Padding(

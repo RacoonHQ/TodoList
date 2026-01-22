@@ -410,6 +410,27 @@ id=789
 
 ---
 
+#### 4. Upload Note Image
+**POST** `/notes/upload_image.php`
+
+Mengunggah gambar untuk dilampirkan ke catatan.
+
+**Request Format:** `multipart/form-data`
+
+**Form Fields:**
+- `image`: Image file (required, max 5MB)
+
+**Response:**
+```json
+{
+    "success": true,
+    "message": "Image uploaded successfully",
+    "image_url": "https://sayyid.bersama.cloud/api/image-note/note_697...jpg"
+}
+```
+
+---
+
 ## 🛠️ Postman Collection
 
 ### Environment Variables
@@ -442,6 +463,7 @@ Buat environment variables di Postman untuk kemudahan:
    - Get All Notes
    - Create Note
    - Delete Note
+   - Upload Note Image
 
 ### Sample Postman Requests
 
@@ -641,8 +663,12 @@ api/
 ├── notes/
 │   ├── index.php          # Get all notes
 │   ├── create.php         # Create note
-│   └── delete.php         # Delete note
-└── image-pp/              # Profile photo storage directory
+│   ├── delete.php         # Delete note
+│   └── upload_image.php   # Image upload for notes
+├── image-pp/              # Profile photo storage directory
+│   └── .htaccess          # CORS configuration for profile photos
+└── image-note/            # Note image storage directory
+    └── .htaccess          # CORS configuration for note images
 ```
 
 ---

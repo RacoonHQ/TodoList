@@ -30,9 +30,16 @@ class _MainHomeScreenState extends State<MainHomeScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _loadUserData();
-    _loadTodos();
-    _loadNotes();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await _loadUserData();
+    // After _userId is loaded, fetch todos and notes
+    if (mounted) {
+      _loadTodos();
+      _loadNotes();
+    }
   }
 
   @override
