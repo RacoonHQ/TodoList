@@ -18,10 +18,20 @@ if (!isset($data->user_id) || !isset($data->title) || !isset($data->content)) {
 }
 
 try {
-    $stmt = $conn->prepare("INSERT INTO notes (user_id, title, content) VALUES (:user_id, :title, :content)");
+    // Ensure image_url column exists
+    try {
+        $conn->exec("ALTER TABLE notes ADD COLUMN IF NOT EXISTS image_url VARCHAR(255) DEFAULT NULL");
+    } catch (PDOException $e) {
+        // Column might already exist or DB doesn't support IF NOT EXISTS
+    }
+
+    $imageUrl = isset($data->image_url) ? $data->image_url : null;
+
+    $stmt = $conn->prepare("INSERT INTO notes (user_id, title, content, image_url) VALUES (:user_id, :title, :content, :image_url)");
     $stmt->bindParam(':user_id', $data->user_id);
     $stmt->bindParam(':title', $data->title);
     $stmt->bindParam(':content', $data->content);
+    $stmt->bindParam(':image_url', $imageUrl);
     
     if ($stmt->execute()) {
         sendResponse(true, 'Note created successfully');

@@ -30,9 +30,16 @@ class _MainHomeScreenState extends State<MainHomeScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _loadUserData();
-    _loadTodos();
-    _loadNotes();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await _loadUserData();
+    // After _userId is loaded, fetch todos and notes
+    if (mounted) {
+      _loadTodos();
+      _loadNotes();
+    }
   }
 
   @override
@@ -107,9 +114,44 @@ class _MainHomeScreenState extends State<MainHomeScreen>
     ];
   }
 
+  // List of page titles corresponding to each tab
+  final List<String> _pageTitles = [
+    'Kalender',
+    'Daftar Tugas',
+    'Catatan',
+    'Profil'
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              _pageTitles[_currentIndex],
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold),
+            ),
+            Row(
+              children: [
+                Text(
+                  _userName.isNotEmpty ? _userName : 'Pengguna',
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.person, color: Colors.white, size: 24),
+              ],
+            ),
+          ],
+        ),
+        backgroundColor: Colors.cyan,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       body: TabBarView(
         controller: _tabController,
         children: _buildTabs(),

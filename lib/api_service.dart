@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http_parser/http_parser.dart';
 
 class ApiService {
   static String _baseUrl = 'https://sayyid.bersama.cloud/api';
@@ -247,8 +248,8 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> createNote(
-      String title, String content) async {
+  static Future<Map<String, dynamic>> createNote(String title, String content,
+      {String? imageUrl}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('user_id');
@@ -260,6 +261,7 @@ class ApiService {
           'user_id': userId,
           'title': title,
           'content': content,
+          if (imageUrl != null) 'image_url': imageUrl,
         }),
       );
 
@@ -269,6 +271,63 @@ class ApiService {
           'success': data['success'],
           'message': data['message'],
         };
+      } else {
+        return {
+          'success': false,
+          'message': 'Server error: ${response.statusCode}'
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> uploadNoteImage(XFile imageFile) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      // Create multipart request
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$_baseUrl/notes/upload_image.php'),
+      );
+
+      // Add headers
+      request.headers.addAll({
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      });
+
+      // Support for both Web and Mobile
+      final bytes = await imageFile.readAsBytes();
+      final extension = imageFile.name.split('.').last.toLowerCase();
+      String mimeType = 'jpeg';
+      if (extension == 'png') mimeType = 'png';
+      if (extension == 'gif') mimeType = 'gif';
+      
+      request.files.add(http.MultipartFile.fromBytes(
+        'image',
+        bytes,
+        filename: imageFile.name,
+        contentType: MediaType('image', mimeType),
+      ));
+
+      // Send request
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return {
+            'success': true,
+            'image_url': data['image_url'],
+            'message': data['message']
+          };
+        } else {
+          return {'success': false, 'message': data['message']};
+        }
       } else {
         return {
           'success': false,
