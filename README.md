@@ -1,8 +1,8 @@
-# 📅 Todo Calendar App
+# TodoList App
 
 Aplikasi Manajemen Tugas (Todo List) lengkap dengan integrasi kalender, autentikasi pengguna, dan sinkronisasi data menggunakan backend PHP MySQL.
 
-## 💻 Bahasa Pemrograman & Teknologi
+## Bahasa Pemrograman & Teknologi
 
 | Komponen | Teknologi |
 |----------|-----------|
@@ -13,33 +13,33 @@ Aplikasi Manajemen Tugas (Todo List) lengkap dengan integrasi kalender, autentik
 
 ---
 
-## 📋 Ikhtisar (Overview)
+## Overview
 
-**Todo Calendar App** adalah solusi manajemen tugas komprehensif yang dirancang untuk membantu pengguna mengatur jadwal harian mereka dengan lebih efisien. Menggunakan **Flutter** untuk antarmuka yang modern dan responsif, serta **PHP/MySQL** untuk penyimpanan data yang aman dan terpusat.
+**TodoList App** adalah solusi manajemen tugas komprehensif yang dirancang untuk membantu pengguna mengatur jadwal harian mereka dengan lebih efisien. Menggunakan **Flutter** untuk antarmuka yang modern dan responsif, serta **PHP/MySQL** untuk penyimpanan data yang aman dan terpusat.
 
 **Pengembang**: Sayyid Abdullah Azzam
 
-## ✨ Fitur Utama
+## Fitur Utama
 
-- **🔐 Autentikasi Pengguna**: Sistem Login dan Daftar yang aman menggunakan token.
-- **📅 Integrasi Kalender**: Tampilan kalender interaktif untuk memantau tugas berdasarkan tanggal.
-- **📱 Navigasi 5 Tab Utama**:
+- **Autentikasi Pengguna**: Sistem Login dan Daftar yang aman menggunakan token.
+- **Integrasi Kalender**: Tampilan kalender interaktif untuk memantau tugas berdasarkan tanggal.
+- **Navigasi 5 Tab Utama**:
   - **Kalender**: Lihat tugas harian melalui antarmuka kalender.
   - **Tugas (Todos)**: Manajemen tugas lengkap (CRUD).
   - **Catatan (Notes)**: Simpan catatan pribadi beserta lampiran gambar.
   - **Profil**: Personalisasi akun dengan foto profil.
   - **Pengaturan**: Konfigurasi aplikasi dan opsi keluar (logout).
-- **🎯 Skala Prioritas**: Kategorikan tugas Anda menjadi Rendah, Sedang, atau Tinggi.
-- **✅ Status Tugas**: Pantau kemajuan tugas (Pending atau Selesai).
-- **🎨 Desain Material 3**: Antarmuka pengguna yang bersih, modern, dan intuitif.
-- **🌐 Lintas Platform**: Mendukung penggunaan di Android, iOS, Web, dan Desktop.
+- **Skala Prioritas**: Kategorikan tugas Anda menjadi Rendah, Sedang, atau Tinggi.
+- **Status Tugas**: Pantau kemajuan tugas (Pending atau Selesai).
+- **Desain Material 3**: Antarmuka pengguna yang bersih, modern, dan intuitif.
+- **Lintas Platform**: Mendukung penggunaan di Android, iOS, Web, dan Desktop.
 
 ---
 
-## 📁 Struktur Proyek
+## Struktur Proyek
 
 ```text
-todo_calendar_app/
+todo_list_project/
 ├── lib/                     # Sumber kode Flutter (Frontend)
 │   ├── main.dart            # Titik awal aplikasi & Wrapper Autentikasi
 │   ├── api_service.dart     # Logika komunikasi REST API terpusat
@@ -59,7 +59,7 @@ todo_calendar_app/
 
 ---
 
-## 🗄 Skema Database
+## Skema Database
 
 Aplikasi menggunakan database MySQL dengan tabel-tabel berikut:
 
@@ -94,7 +94,7 @@ Menyimpan catatan pribadi.
 
 ---
 
-## 🚀 Panduan Instalasi
+## Panduan Instalasi
 
 ### 1. Pengaturan Backend (PHP & MySQL)
 1. Unggah seluruh isi folder `api/` ke server web Anda.
@@ -125,7 +125,7 @@ Menyimpan catatan pribadi.
 
 ---
 
-## 📡 Dokumentasi API
+## Dokumentasi API
 
 Untuk rincian lengkap mengenai endpoint, format Request/Response, dan contoh penggunaan menggunakan Postman, silakan merujuk pada: **[API.md](./API.md)**
 
@@ -144,7 +144,7 @@ Untuk rincian lengkap mengenai endpoint, format Request/Response, dan contoh pen
 
 ---
 
-## 🔒 Keamanan & Optimasi
+## Keamanan & Optimasi
 
 - **Hashing**: Semua password disimpan dalam bentuk hash aman menggunakan `password_hash()`.
 - **Prepared Statements**: Menggunakan PDO untuk mencegah serangan SQL Injection.
@@ -154,11 +154,11 @@ Untuk rincian lengkap mengenai endpoint, format Request/Response, dan contoh pen
 
 ---
 
-## 🤝 Kontribusi & Lisensi
+## Kontribusi & Lisensi
 
 Kami sangat menghargai kontribusi Anda! Silakan *Fork* repositori ini, buat *branch* fitur baru, dan ajukan *Pull Request*.
 
 Proyek ini dilisensikan di bawah **Lisensi MIT**. Lihat file `LICENSE` untuk detail lebih lanjut.
 
 ---
-**Dikembangkan dengan ❤️ oleh Sayyid Abdullah Azzam**
+**Dikembangkan oleh Sayyid Abdullah Azzam**
