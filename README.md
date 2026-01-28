@@ -39,7 +39,7 @@ Aplikasi Manajemen Tugas (Todo List) lengkap dengan integrasi kalender, autentik
 ## Struktur Proyek
 
 ```text
-todo_list_project/
+TodoList/
 ├── lib/                     # Sumber kode Flutter (Frontend)
 │   ├── main.dart            # Titik awal aplikasi & Wrapper Autentikasi
 │   ├── api_service.dart     # Logika komunikasi REST API terpusat

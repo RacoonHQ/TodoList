@@ -3,7 +3,7 @@
 Dokumentasi ringkas untuk integrasi backend PHP MySQL dengan frontend Flutter.
 
 ## Struktur Folder API
-Seluruh kode backend tersedia di folder [api/](./api/).
+Seluruh kode backend tersedia di folder [FOLDER API/api/](./FOLDER%20API/api/).
 
 ```text
 api/
@@ -18,7 +18,7 @@ api/
 ---
 
 ## Skema Database
-Detail skema database lengkap dapat ditemukan di folder [database/](./database/).
+Detail skema database lengkap dapat ditemukan di folder [FOLDER DATABASE/database/](./FOLDER%20DATABASE/database/).
 
 | Tabel | Deskripsi |
 |-------|-----------|
